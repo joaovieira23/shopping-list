@@ -2,7 +2,7 @@ const electron = require('electron');
 const url = require('url')
 const path = require('path')
 
-const { app, BrowserWindow, Menu } = electron;
+const { app, BrowserWindow, Menu, ipcMain } = electron;
 
 let mainWindow;
 let addWindow;
@@ -10,7 +10,11 @@ let addWindow;
 // Ouvir se o aplicativo está pronto
 app.on('ready', function () {
   // Criar nova janela
-  mainWindow = new BrowserWindow({});
+  mainWindow = new BrowserWindow({
+    webPreferences: {
+      nodeIntegration: true
+    }
+  });
   // Carregar HTML dentro da janela
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'mainWindow.html'),
@@ -38,6 +42,9 @@ function createAddWindow() {
   });
   // Carregar HTML dentro da janela
   addWindow.loadURL(url.format({
+    webPreferences: {
+      nodeIntegration: true
+    },
     pathname: path.join(__dirname, 'addWindow.html'),
     protocol: 'file:',
     slashes: true
@@ -49,6 +56,13 @@ function createAddWindow() {
   });
 
 }
+
+// Pegar item:add
+ipcMain.on('item:add', function (e, item) {
+  console.log(item);
+  mainWindow.webContents.send('item:add', item)
+  addWindow.close();
+})
 
 // Criar template do menu
 const mainMenuTemplate = [
